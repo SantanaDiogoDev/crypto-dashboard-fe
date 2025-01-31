@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
-import { addCoin } from '../services/api'; // Import only the `addCoin` function
+import { addCoin } from '../services/api';
 
 const CoinInput = () => {
-  const [coinData, setCoinData] = useState({ coinName: '', value: '', date: '' });
+  const [coinData, setCoinData] = useState({
+    coinName: '',
+    value: '',
+    quantity: '',
+    date: '',
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addCoin(coinData); // Call the `addCoin` function
+      await addCoin({
+        coinName: coinData.coinName,
+        value: parseFloat(coinData.value),
+        quantity: parseFloat(coinData.quantity),
+        date: coinData.date,
+      });
       alert('Coin added successfully!');
-      setCoinData({ coinName: '', value: '', date: '' });
+      setCoinData({ coinName: '', value: '', quantity: '', date: '' });
     } catch (error) {
       console.error('Error adding coin:', error);
     }
@@ -18,7 +28,7 @@ const CoinInput = () => {
   return (
     <form onSubmit={handleSubmit} className="mb-4">
       <div className="row">
-        <div className="col-md-4">
+        <div className="col-md-3">
           <input
             type="text"
             className="form-control"
@@ -28,7 +38,7 @@ const CoinInput = () => {
             required
           />
         </div>
-        <div className="col-md-4">
+        <div className="col-md-3">
           <input
             type="number"
             className="form-control"
@@ -38,7 +48,17 @@ const CoinInput = () => {
             required
           />
         </div>
-        <div className="col-md-4">
+        <div className="col-md-3">
+          <input
+            type="number"
+            className="form-control"
+            placeholder="Quantity"
+            value={coinData.quantity}
+            onChange={(e) => setCoinData({ ...coinData, quantity: e.target.value })}
+            required
+          />
+        </div>
+        <div className="col-md-3">
           <input
             type="date"
             className="form-control"
