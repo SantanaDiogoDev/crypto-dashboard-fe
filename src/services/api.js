@@ -9,22 +9,19 @@ const apiClient = axios.create({
   },
 });
 
-// Fetch all unique coin names
 export const getAllUniqueCoinNames = async () => {
   const response = await apiClient.get('/unique-names');
   return response.data;
 };
 
-// Add a new coin
 export const addNewCoin = async (coinName) => {
   const response = await apiClient.post('/add-coin', { name: coinName });
   return response.data;
 };
 
-// Add a new entry
 export const addCoin = async (entry) => {
     try {
-      const response = await apiClient.post('/', entry); // Send POST request to /api/coins
+      const response = await apiClient.post('/', entry); 
       return response.data;
     } catch (error) {
       console.error('Error adding new entry:', error);
@@ -32,13 +29,11 @@ export const addCoin = async (entry) => {
     }
   };
 
-// Fetch entries by coin name
 export const getCoinsByCoinName = async (coinName) => {
   const response = await apiClient.get(`?coinName=${coinName}`);
   return response.data;
 };
 
-// Fetch entries by date range
 export const getEntriesByDateRange = async (coinName, startDate, endDate) => {
   try {
     const response = await apiClient.get(`/entries-by-date-range`, {

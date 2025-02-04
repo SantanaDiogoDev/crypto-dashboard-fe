@@ -16,6 +16,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 function App() {
+  console.log('App component rendered');
   const [selectedCoin, setSelectedCoin] = useState('');
   const [coinNames, setCoinNames] = useState([]);
   const [newCoinName, setNewCoinName] = useState('');
@@ -50,12 +51,9 @@ function App() {
 
   const fetchChartData = useCallback(async () => {
     try {
-      console.log('Fetching data for coins:', coinNames); // Log coin names
-  
       const allCoinsData = await Promise.all(
         coinNames.map(async (coinName) => {
           const entries = await getCoinsByCoinName(coinName);
-          console.log(`Entries fetched for ${coinName}:`, entries); // Log fetched entries
           return entries.map((entry) => ({
             date: entry.date,
             totalValue: entry.value * entry.quantity,
@@ -63,39 +61,27 @@ function App() {
         })
       );
   
-      console.log('All coins data:', allCoinsData); // Log processed data
-  
-      // Flatten all entries to find the global date range
       const allEntries = allCoinsData.flat();
-      console.log('Flattened entries:', allEntries); // Log flattened entries
   
       if (allEntries.length === 0) {
-        console.warn('No entries found for any coin.');
-        setChartData(null); // Handle empty data gracefully
+        setChartData(null); 
         return;
       }
   
-      // Extract unique dates
       const allDates = [...new Set(allEntries.map((entry) => entry.date))].sort();
-      console.log('Unique dates:', allDates); // Log unique dates
   
       if (allDates.length < 2) {
-        console.warn('Not enough dates to generate a range.');
-        setChartData(null); // Handle insufficient data
+        setChartData(null); 
         return;
       }
   
-      // Generate full date range
       const startDate = allDates[0];
       const endDate = allDates[allDates.length - 1];
       const fullDateRange = generateDateRange(startDate, endDate);
-      console.log('Full date range:', fullDateRange); // Log full date range
   
-      // Prepare datasets with filled dates
       const datasets = coinNames.map((coinName, index) => {
         const coinData = allCoinsData[index];
         const filledData = fillMissingDates(coinData, fullDateRange);
-        console.log(`Filled data for ${coinName}:`, filledData); // Log filled data
         return {
           label: coinName,
           data: filledData.map((d) => d.totalValue),
@@ -104,8 +90,6 @@ function App() {
           fill: false,
         };
       });
-  
-      console.log('Final chart data:', { labels: fullDateRange, datasets }); // Log final chart data
   
       setChartData({
         labels: fullDateRange,
@@ -116,7 +100,15 @@ function App() {
     }
   }, [coinNames]);
 
-  // Fetch filtered chart data by date range
+  useEffect(() => {
+    if (coinNames.length > 0) {
+      console.log('Fetching chart data on component mount...');
+      fetchChartData();
+    } else {
+      console.warn('No coins available to fetch chart data.');
+    }
+  }, [coinNames, fetchChartData]);
+
   const fetchFilteredChartData = useCallback(async () => {
     try {
       const { startDate, endDate } = dateRange;
@@ -165,7 +157,6 @@ function App() {
     fetchChartData(); // Reload the chart with all data
   };
 
-  // Generate a random color
   const getRandomColor = () => {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -198,11 +189,11 @@ function App() {
       const entry = data.find((d) => d.date === date);
       return {
         date,
-        totalValue: entry ? entry.totalValue : null, // Use null for missing dates
+        totalValue: entry ? entry.totalValue : null,
       };
     });
   
-    console.log('Filled missing dates:', filledData); // Log filled data
+    console.log('Filled missing dates:', filledData); 
     return filledData;
   };
 
@@ -212,11 +203,10 @@ function App() {
     const lastDate = new Date(endDate);
   
     while (currentDate <= lastDate) {
-      dates.push(currentDate.toISOString().split('T')[0]); // Format as YYYY-MM-DD
-      currentDate.setDate(currentDate.getDate() + 1); // Increment by one day
+      dates.push(currentDate.toISOString().split('T')[0]);
+      currentDate.setDate(currentDate.getDate() + 1);
     }
   
-    console.log('Generated date range:', dates); // Log generated dates
     return dates;
   };
 
@@ -229,7 +219,6 @@ function App() {
     }
   
     try {
-      // Prepare the payload
       const entry = {
         coinName: selectedCoin,
         value: parseFloat(entryData.value),
@@ -237,20 +226,16 @@ function App() {
         date: entryData.date,
       };
   
-      // Add the new entry
       await addCoin(entry);
   
-      // Show success message
       setSuccessMessage('Entry added successfully!');
   
-      // Reset the form fields
       setEntryData({
         quantity: '',
         value: '',
         date: new Date().toISOString().split('T')[0],
       });
   
-      // Reload the chart data
       await fetchChartData();
   
       // Clear the success message after 3 seconds
